@@ -1,0 +1,12 @@
+{
+  "kind": "youtube#channelListResponse",
+  "items": [
+    {
+      "kind": "youtube#channel",
+      "id": "UCSMOQeBJ2RAnuFungnQOxLg",
+      "contentDetails": {
+        "relatedPlaylists": { "likes": "", "uploads": "UUSMOQeBJ2RAnuFungnQOxLg" }
+      }
+    }
+  ]
+}

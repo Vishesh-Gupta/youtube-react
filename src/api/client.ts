@@ -1,4 +1,4 @@
-import type { SearchPage } from './types'
+import type { SearchPage, VideoDetails } from './types'
 
 export class ApiError extends Error {
   constructor(
@@ -25,7 +25,17 @@ async function request<T>(path: string, signal?: AbortSignal): Promise<T> {
   return (await response.json()) as T
 }
 
+const withPage = (path: string, page?: string | null) =>
+  page ? `${path}${path.includes('?') ? '&' : '?'}page=${encodeURIComponent(page)}` : path
+
 export const api = {
-  search: (query: string, signal?: AbortSignal) =>
-    request<SearchPage>(`/search?q=${encodeURIComponent(query)}`, signal),
+  search: (query: string, page?: string | null, signal?: AbortSignal) =>
+    request<SearchPage>(withPage(`/search?q=${encodeURIComponent(query)}`, page), signal),
+  video: (id: string, signal?: AbortSignal) =>
+    request<VideoDetails>(`/videos/${encodeURIComponent(id)}`, signal),
+  channelVideos: (channelId: string, page?: string | null, signal?: AbortSignal) =>
+    request<SearchPage>(
+      withPage(`/channels/${encodeURIComponent(channelId)}/videos`, page),
+      signal,
+    ),
 }

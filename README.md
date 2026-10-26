@@ -1,8 +1,13 @@
 # YouTube React
 
-Search YouTube and watch videos in a clean, fast player: results update as you type, the top
-result plays straight away, and any other is one click away. Built with React and the
+Search YouTube and watch videos in a clean, fast player. Built with React and the
 [YouTube Data API](https://developers.google.com/youtube/v3).
+
+- Results update as you pause typing, with each video's length, views and age; what's popular
+  shows before you search.
+- Every video has its own page (`/watch/<id>`) with the player, views, likes, upload date, the
+  full description, and more from the same channel.
+- Searches and videos are real URLs, so they can be shared, bookmarked and reached with Back.
 
 Started in 2018 as a React course project; rebuilt on a current stack.
 
@@ -31,13 +36,15 @@ The key stays on the server: the browser only ever talks to this app's `/api`.
 
 ### Quota
 
-The API allows 10,000 units a day. A search costs 100 (so about 100 searches a day); the
-popular-videos list shown before you search costs 1. To stretch that, the server:
+The API allows 10,000 units a day. A search costs 101 (100 for the search, 1 for the lengths
+and view counts of its results), so about 100 searches a day; everything else costs 1 or 2: the
+popular list, a video's details, and a channel's uploads (read from its uploads playlist rather
+than searched). To stretch that, the server:
 
-- caches each search for an hour, and shares one request between visitors searching for the
-  same thing at once;
+- caches each search for an hour (video details for 10 minutes, channel lists for 30), and
+  shares one request between visitors asking for the same thing at once;
 - waits for a pause in typing before searching;
-- limits each visitor to 30 searches a minute.
+- limits each visitor to 30 requests a minute.
 
 When the day's quota runs out, the page says so; it resets at midnight Pacific time.
 
