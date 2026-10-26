@@ -1,0 +1,267 @@
+:root {
+  --bg: #ffffff;
+  --surface: #f2f2f2;
+  --surface-hover: #e5e5e5;
+  --text: #0f0f0f;
+  --text-secondary: #606060;
+  --border: #d3d3d3;
+  --accent: #065fd4;
+  --selected: #def1ff;
+  --radius: 12px;
+  font-family:
+    Roboto,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f0f0f;
+    --surface: #272727;
+    --surface-hover: #3f3f3f;
+    --text: #f1f1f1;
+    --text-secondary: #aaaaaa;
+    --border: #3f3f3f;
+    --accent: #3ea6ff;
+    --selected: #263850;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* --- Header --------------------------------------------------------------------------- */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 24px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 1.125rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.search-bar {
+  flex: 1;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 9px 18px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+
+.search-bar input:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+/* --- Layout --------------------------------------------------------------------------- */
+
+.main {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 400px);
+  gap: 24px;
+  align-items: start;
+}
+
+.notice {
+  margin: 48px auto;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+/* --- Player and details --------------------------------------------------------------- */
+
+.player {
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #000;
+}
+
+.player iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.video-detail h1 {
+  margin: 12px 0 4px;
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+
+.video-channel {
+  margin: 0 0 12px;
+  font-weight: 500;
+}
+
+.video-description {
+  margin: 0;
+  padding: 12px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+/* --- Result list ---------------------------------------------------------------------- */
+
+.video-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.video-list-item button {
+  display: grid;
+  grid-template-columns: 168px minmax(0, 1fr);
+  gap: 8px;
+  width: 100%;
+  padding: 4px;
+  border: 0;
+  border-radius: var(--radius);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.video-list-item button:hover {
+  background: var(--surface);
+}
+
+.video-list-item button[aria-current='true'] {
+  background: var(--selected);
+}
+
+.video-list-item img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.video-list-text {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+}
+
+.video-list-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.video-list-channel {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+/* --- Narrow screens ------------------------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .header {
+    padding: 8px 12px;
+  }
+
+  /* Icon only, but still named for screen readers. */
+  .brand span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .main {
+    padding: 0 0 16px;
+  }
+
+  .player {
+    border-radius: 0;
+  }
+
+  .video-detail h1,
+  .video-channel,
+  .video-description,
+  .video-list {
+    margin-left: 12px;
+    margin-right: 12px;
+  }
+
+  .video-list-item button {
+    grid-template-columns: 140px minmax(0, 1fr);
+  }
+}
