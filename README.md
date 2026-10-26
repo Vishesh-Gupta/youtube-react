@@ -8,6 +8,15 @@ Search YouTube and watch videos in a clean, fast player. Built with React and th
 - Every video has its own page (`/watch/<id>`) with the player, views, likes, upload date, the
   full description, and more from the same channel.
 - Searches and videos are real URLs, so they can be shared, bookmarked and reached with Back.
+- Light and dark to match your system, works on phones, and <kbd>/</kbd> jumps to search.
+
+![Results](docs/screenshots/results.jpg)
+
+| Watch page (dark)                         | Phone                                                |
+| ----------------------------------------- | ---------------------------------------------------- |
+| ![Watch page](docs/screenshots/watch.jpg) | ![Watch page on a phone](docs/screenshots/phone.jpg) |
+
+Screenshots show the sample videos it uses until an API key is set.
 
 Started in 2018 as a React course project; rebuilt on a current stack.
 
@@ -57,6 +66,15 @@ YOUTUBE_API_KEY=... pnpm start   # http://localhost:8787 (PORT to change)
 
 `pnpm start` runs the server (Hono on Node, which runs the TypeScript directly) and serves the
 built app, with a strict Content Security Policy.
+
+Or with Docker:
+
+```sh
+docker build -t youtube-react .
+docker run -p 8787:8787 -e YOUTUBE_API_KEY=... youtube-react
+```
+
+The image runs as a non-root user and reports its health at `/api/health`.
 
 ## Development
 

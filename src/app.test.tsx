@@ -156,6 +156,20 @@ describe('watch page', () => {
   })
 })
 
+describe('keyboard', () => {
+  it('jumps to the search box with /', async () => {
+    mockApi()
+    renderApp('/')
+    await results()
+    const user = userEvent.setup()
+    await user.keyboard('/')
+    expect(screen.getByRole('searchbox')).toHaveFocus()
+    // Typing a slash in the box is just a slash.
+    await user.keyboard('a/b')
+    expect(screen.getByRole('searchbox')).toHaveValue('a/b')
+  })
+})
+
 describe('unknown pages', () => {
   it('offers a way back', async () => {
     mockApi()
