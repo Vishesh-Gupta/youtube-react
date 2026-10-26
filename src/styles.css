@@ -116,6 +116,25 @@ body {
   align-items: start;
 }
 
+.demo-notice {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.demo-notice code {
+  font-size: 0.8125rem;
+}
+
+.results-heading {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
 .notice {
   margin: 48px auto;
   text-align: center;
@@ -256,6 +275,8 @@ body {
   .video-detail h1,
   .video-channel,
   .video-description,
+  .demo-notice,
+  .results-heading,
   .video-list {
     margin-left: 12px;
     margin-right: 12px;

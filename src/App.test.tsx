@@ -55,6 +55,15 @@ describe('App', () => {
     expect(await screen.findByText('No videos match “zzzz”.')).toBeInTheDocument()
   })
 
+  it('says when it is showing sample videos, and labels the results', async () => {
+    mockApi()
+    renderApp()
+    expect(await screen.findByText(/Showing sample videos/)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Sample videos' })).toBeInTheDocument()
+    await userEvent.setup().type(screen.getByRole('searchbox'), 'sintel')
+    expect(await screen.findByRole('heading', { name: 'Results for “sintel”' })).toBeInTheDocument()
+  })
+
   it('explains errors from the server', async () => {
     mockApi({ status: 503, error: 'The daily YouTube quota is used up' })
     renderApp()

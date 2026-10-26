@@ -19,6 +19,7 @@ export function App() {
   })
   const [chosen, setChosen] = useState<Video | null>(null)
   const videos = results.data?.items ?? []
+  const source = results.data?.source
   // The chosen video stays on screen across searches; until there is one, play the top result.
   const playing = chosen ?? videos[0] ?? null
 
@@ -35,6 +36,12 @@ export function App() {
         <SearchBar value={query} onChange={setQuery} />
       </header>
       <main className="main">
+        {source === 'demo' ? (
+          <p className="demo-notice">
+            Showing sample videos. Set <code>YOUTUBE_API_KEY</code> on the server to search all of
+            YouTube.
+          </p>
+        ) : null}
         {results.isError ? (
           <p className="notice" role="alert">
             Couldn&apos;t load videos: {results.error.message}
@@ -46,7 +53,16 @@ export function App() {
         ) : (
           <div className="layout">
             {playing ? <VideoDetail video={playing} /> : null}
-            <VideoList videos={videos} selectedId={playing?.id ?? null} onSelect={setChosen} />
+            <section className="results" aria-labelledby="results-heading">
+              <h2 id="results-heading" className="results-heading">
+                {term
+                  ? `Results for “${term}”`
+                  : source === 'youtube'
+                    ? 'Popular on YouTube'
+                    : 'Sample videos'}
+              </h2>
+              <VideoList videos={videos} selectedId={playing?.id ?? null} onSelect={setChosen} />
+            </section>
           </div>
         )}
       </main>
