@@ -13,6 +13,7 @@ export function mockApi(failure?: { status: number; error: string }) {
     return Response.json({
       items: searchDemo(url.searchParams.get('q') ?? ''),
       nextPageToken: null,
+      source: 'demo',
     })
   })
   vi.stubGlobal('fetch', fetchMock)

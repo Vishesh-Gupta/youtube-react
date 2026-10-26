@@ -14,4 +14,6 @@ export interface SearchPage {
   items: Video[]
   /** Pass back to get the next page; null on the last one. */
   nextPageToken: string | null
+  /** Where results came from: YouTube, or the sample videos when no API key is set. */
+  source: 'youtube' | 'demo'
 }
