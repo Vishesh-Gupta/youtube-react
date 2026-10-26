@@ -6,8 +6,8 @@ import { serveStatic } from '@hono/node-server/serve-static'
 import { type Context, Hono } from 'hono'
 import { secureHeaders } from 'hono/secure-headers'
 
-import { searchDemo } from '../demo/videos.ts'
-import type { SearchPage } from '../src/api/types.ts'
+import { demoChannel, demoDetails, searchDemo } from '../demo/videos.ts'
+import type { SearchPage, VideoDetails } from '../src/api/types.ts'
 import { ResultCache } from './cache.ts'
 import { RateLimiter } from './rateLimit.ts'
 import { YouTubeError, createYouTubeClient } from './youtube.ts'
@@ -32,14 +32,27 @@ function clientAddress(c: Context): string {
   }
 }
 
+/** A YouTube failure as a JSON error the page can show; anything else is a bug, so rethrow. */
+function youTubeError(c: Context, error: unknown) {
+  if (error instanceof YouTubeError)
+    return c.json({ error: error.message }, error.status as 400 | 404 | 500 | 502 | 503)
+  throw error
+}
+
 const MAX_QUERY = 200
 const PAGE_TOKEN = /^[\w-]{1,100}$/
+const VIDEO_ID = /^[\w-]{11}$/
+// Channel ids ("UC" + 22 characters); the sample videos use handles.
+const CHANNEL_ID = /^(UC[\w-]{22}|@[\w.-]{3,30})$/
 
 export function createApp(options: AppOptions = {}) {
   const { apiKey, dist, now = Date.now } = options
   const youtube = apiKey ? createYouTubeClient(apiKey, options.fetch) : null
   // Results for a query barely change within an hour, and each search costs 100 quota units.
   const cache = new ResultCache<Omit<SearchPage, 'source'>>(500, 60 * 60_000, now)
+  // View counts move, so details and channel lists are kept for less time.
+  const details = new ResultCache<VideoDetails | null>(1_000, 10 * 60_000, now)
+  const channels = new ResultCache<Omit<SearchPage, 'source'>>(500, 30 * 60_000, now)
   const limiter = new RateLimiter(options.searchesPerMinute ?? 30, 60_000, now)
 
   const app = new Hono()
@@ -88,9 +101,47 @@ export function createApp(options: AppOptions = {}) {
       c.header('Cache-Control', 'public, max-age=300')
       return c.json<SearchPage>({ ...result, source: 'youtube' })
     } catch (error) {
-      if (error instanceof YouTubeError)
-        return c.json({ error: error.message }, error.status as 400 | 500 | 502 | 503)
-      throw error
+      return youTubeError(c, error)
+    }
+  })
+
+  app.get('/api/videos/:id', async (c) => {
+    const id = c.req.param('id')
+    if (!VIDEO_ID.test(id)) return c.json({ error: 'That is not a video id.' }, 400)
+    if (!youtube) {
+      const video = demoDetails(id)
+      return video ? c.json(video) : c.json({ error: 'That video was not found.' }, 404)
+    }
+    if (!limiter.allow(clientAddress(c)))
+      return c.json({ error: 'Too many requests. Wait a minute and try again.' }, 429)
+    try {
+      const video = await details.get(id, () => youtube.details(id))
+      if (!video) return c.json({ error: 'That video was not found.' }, 404)
+      c.header('Cache-Control', 'public, max-age=300')
+      return c.json(video)
+    } catch (error) {
+      return youTubeError(c, error)
+    }
+  })
+
+  app.get('/api/channels/:id/videos', async (c) => {
+    const id = c.req.param('id')
+    const page = c.req.query('page')
+    if (!CHANNEL_ID.test(id)) return c.json({ error: 'That is not a channel id.' }, 400)
+    if (page !== undefined && !PAGE_TOKEN.test(page))
+      return c.json({ error: 'That page of results is not valid.' }, 400)
+    if (!youtube)
+      return c.json<SearchPage>({ items: demoChannel(id), nextPageToken: null, source: 'demo' })
+    if (!limiter.allow(clientAddress(c)))
+      return c.json({ error: 'Too many requests. Wait a minute and try again.' }, 429)
+    try {
+      const result = await channels.get(`${id}\u0000${page ?? ''}`, () =>
+        youtube.channelVideos(id, page),
+      )
+      c.header('Cache-Control', 'public, max-age=300')
+      return c.json<SearchPage>({ ...result, source: 'youtube' })
+    } catch (error) {
+      return youTubeError(c, error)
     }
   })
 

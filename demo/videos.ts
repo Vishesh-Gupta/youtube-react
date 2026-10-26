@@ -1,4 +1,4 @@
-import type { Video } from '../src/api/types.ts'
+import type { Video, VideoDetails } from '../src/api/types.ts'
 
 // Blender's open movies: real, embeddable videos, so the app works end to end
 // without an API key. Titles are as published; descriptions are summaries.
@@ -15,6 +15,9 @@ const video = (
   channelTitle,
   publishedAt: null,
   thumbnail: { url: `https://i.ytimg.com/vi/${id}/mqdefault.jpg`, width: 320, height: 180 },
+  // Not known without the API; the app shows nothing rather than a guess.
+  duration: null,
+  viewCount: null,
 })
 
 export const DEMO_VIDEOS: Video[] = [
@@ -88,3 +91,12 @@ export function searchDemo(query: string): Video[] {
     return words.every((w) => text.includes(w))
   })
 }
+
+/** A sample video's details: the same video, with no statistics. */
+export function demoDetails(id: string): VideoDetails | null {
+  const video = DEMO_VIDEOS.find((v) => v.id === id)
+  return video ? { ...video, likeCount: null, commentCount: null } : null
+}
+
+export const demoChannel = (channelId: string): Video[] =>
+  DEMO_VIDEOS.filter((v) => v.channelId === channelId)

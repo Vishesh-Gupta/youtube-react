@@ -3,12 +3,12 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import { createApp } from './app.ts'
-import search from './fixtures/search.json' with { type: 'json' }
+import { googleApi } from './testing.ts'
 
-const youtube = () => vi.fn<typeof fetch>(async () => Response.json(search))
+const youtube = () => googleApi()
 
 describe('API without a key', () => {
   it('answers from the sample videos', async () => {
@@ -33,29 +33,31 @@ describe('API with a key', () => {
     const body = await first.json()
     expect(body).toMatchObject({ source: 'youtube', nextPageToken: 'CBQQAA' })
     expect(body.items).toHaveLength(2)
-    // Same search, different case: served from the cache.
+    // Same search, different case: served from the cache (one search + one videos call).
     await app.request('/api/search?q=blender')
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
   it('shares one request between simultaneous identical searches', async () => {
     const fetchMock = youtube()
     const app = createApp({ apiKey: 'KEY', fetch: fetchMock })
     await Promise.all([app.request('/api/search?q=a'), app.request('/api/search?q=a')])
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
   it('passes on YouTube errors in plain words, and tries again next time', async () => {
-    const fetchMock = vi
-      .fn<typeof fetch>()
-      .mockResolvedValueOnce(
-        Response.json({ error: { errors: [{ reason: 'quotaExceeded' }] } }, { status: 403 }),
-      )
-      .mockResolvedValueOnce(Response.json(search))
+    let quotaLeft = false
+    const fetchMock = googleApi({
+      search: () =>
+        quotaLeft
+          ? Response.json({ items: [] })
+          : Response.json({ error: { errors: [{ reason: 'quotaExceeded' }] } }, { status: 403 }),
+    })
     const app = createApp({ apiKey: 'KEY', fetch: fetchMock })
     const failed = await app.request('/api/search?q=x')
     expect(failed.status).toBe(503)
     expect((await failed.json()).error).toMatch(/allowance is used up/)
+    quotaLeft = true
     expect((await app.request('/api/search?q=x')).status).toBe(200)
   })
 
@@ -74,6 +76,44 @@ describe('API with a key', () => {
     expect((await app.request(`/api/search?q=${'x'.repeat(201)}`)).status).toBe(400)
     expect((await app.request('/api/search?q=x&page=../../etc')).status).toBe(400)
     expect((await app.request('/api/nope')).status).toBe(404)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('video details and channel videos', () => {
+  it('answers from the sample videos without a key', async () => {
+    const app = createApp()
+    expect(await (await app.request('/api/videos/eRsGyueVLvQ')).json()).toMatchObject({
+      title: 'Sintel - Open Movie by Blender Foundation',
+      viewCount: null,
+      likeCount: null,
+    })
+    expect((await app.request('/api/videos/aaaaaaaaaaa')).status).toBe(404)
+    const channel = await (await app.request('/api/channels/@BlenderStudio/videos')).json()
+    expect(channel.items.map((v: { id: string }) => v.id)).toEqual(['WhWc3b3KhnY', 'mN0zPOpADL4'])
+  })
+
+  it('caches details and channel pages from YouTube', async () => {
+    const fetchMock = youtube()
+    const app = createApp({ apiKey: 'KEY', fetch: fetchMock })
+    const video = await app.request('/api/videos/eRsGyueVLvQ')
+    expect(await video.json()).toMatchObject({ viewCount: 24719402, likeCount: 251000 })
+    await app.request('/api/videos/eRsGyueVLvQ')
+    const channel = await app.request('/api/channels/UCSMOQeBJ2RAnuFungnQOxLg/videos')
+    expect(await channel.json()).toMatchObject({
+      source: 'youtube',
+      nextPageToken: 'EAAaBlBUOkNBVQ',
+    })
+    await app.request('/api/channels/UCSMOQeBJ2RAnuFungnQOxLg/videos')
+    // details: 1 call; channel: channels + playlistItems + videos. Repeats are cached.
+    expect(fetchMock).toHaveBeenCalledTimes(4)
+  })
+
+  it('rejects ids that are not ids before calling YouTube', async () => {
+    const fetchMock = youtube()
+    const app = createApp({ apiKey: 'KEY', fetch: fetchMock })
+    expect((await app.request('/api/videos/not-an-id')).status).toBe(400)
+    expect((await app.request('/api/channels/..%2F..%2Fx/videos')).status).toBe(400)
     expect(fetchMock).not.toHaveBeenCalled()
   })
 })

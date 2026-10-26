@@ -41,6 +41,10 @@ body {
   background: var(--bg);
 }
 
+a {
+  color: var(--accent);
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -53,6 +57,21 @@ body {
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -48px;
+  z-index: 2;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--text);
+  color: var(--bg);
+}
+
+.skip-link:focus {
+  top: 8px;
 }
 
 /* --- Header --------------------------------------------------------------------------- */
@@ -101,19 +120,12 @@ body {
   outline: none;
 }
 
-/* --- Layout --------------------------------------------------------------------------- */
+/* --- Page ----------------------------------------------------------------------------- */
 
 .main {
-  max-width: 1600px;
+  max-width: 1800px;
   margin: 0 auto;
   padding: 24px;
-}
-
-.layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(300px, 400px);
-  gap: 24px;
-  align-items: start;
 }
 
 .demo-notice {
@@ -130,18 +142,215 @@ body {
 }
 
 .results-heading {
-  margin: 0 0 8px;
-  font-size: 1rem;
+  margin: 0 0 16px;
+  font-size: 1.125rem;
   font-weight: 600;
 }
 
 .notice {
   margin: 48px auto;
+  max-width: 560px;
   text-align: center;
   color: var(--text-secondary);
 }
 
-/* --- Player and details --------------------------------------------------------------- */
+.caption {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.load-more,
+.text-button {
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.load-more {
+  display: block;
+  margin: 24px auto 0;
+  padding: 9px 20px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 500;
+}
+
+.load-more:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.load-more:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.text-button {
+  padding: 0;
+  background: none;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+/* --- Video cards ---------------------------------------------------------------------- */
+
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 32px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.video-card > a {
+  display: grid;
+  gap: 10px;
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--radius);
+}
+
+.thumb {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.duration {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.video-card-text {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+}
+
+.video-card-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.video-card-meta {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.video-card > a:hover .video-card-title {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* The sidebar's narrow cards: thumbnail beside the text. */
+.video-grid.is-compact {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+.video-card.is-compact > a {
+  grid-template-columns: 168px minmax(0, 1fr);
+  gap: 8px;
+  padding: 4px;
+}
+
+.video-card.is-compact > a:hover {
+  background: var(--surface);
+}
+
+.video-card.is-compact > a[aria-current='page'] {
+  background: var(--selected);
+}
+
+.video-card.is-compact .thumb {
+  border-radius: 8px;
+}
+
+.video-card.is-compact .video-card-title {
+  font-size: 0.875rem;
+}
+
+.video-card.is-compact .video-card-meta {
+  font-size: 0.75rem;
+}
+
+/* --- Loading placeholders ------------------------------------------------------------- */
+
+.skeleton .thumb,
+.skeleton-line,
+.player.is-loading {
+  background: var(--surface);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.video-card.skeleton {
+  display: grid;
+  gap: 10px;
+}
+
+.video-card.is-compact.skeleton {
+  grid-template-columns: 168px minmax(0, 1fr);
+  gap: 8px;
+  padding: 4px;
+}
+
+.skeleton-line {
+  display: block;
+  height: 14px;
+  border-radius: 4px;
+}
+
+.skeleton-line.short {
+  width: 60%;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton .thumb,
+  .skeleton-line,
+  .player.is-loading {
+    animation: none;
+  }
+}
+
+/* --- Watch page ----------------------------------------------------------------------- */
+
+.watch {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 402px);
+  gap: 24px;
+  align-items: start;
+}
 
 .player {
   aspect-ratio: 16 / 9;
@@ -157,7 +366,7 @@ body {
   border: 0;
 }
 
-.video-detail h1 {
+.video-title {
   margin: 12px 0 4px;
   font-size: 1.25rem;
   line-height: 1.4;
@@ -168,83 +377,42 @@ body {
   font-weight: 500;
 }
 
-.video-description {
-  margin: 0;
+.about {
   padding: 12px;
   border-radius: var(--radius);
   background: var(--surface);
   font-size: 0.875rem;
   line-height: 1.5;
+}
+
+.stats {
+  margin: 0 0 4px;
+  font-weight: 600;
+}
+
+.description {
+  margin: 0 0 4px;
   white-space: pre-line;
+  overflow-wrap: anywhere;
 }
 
-/* --- Result list ---------------------------------------------------------------------- */
-
-.video-list {
-  display: grid;
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.video-list-item button {
-  display: grid;
-  grid-template-columns: 168px minmax(0, 1fr);
-  gap: 8px;
-  width: 100%;
-  padding: 4px;
-  border: 0;
-  border-radius: var(--radius);
-  background: none;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.video-list-item button:hover {
-  background: var(--surface);
-}
-
-.video-list-item button[aria-current='true'] {
-  background: var(--selected);
-}
-
-.video-list-item img {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  border-radius: 8px;
-  background: var(--surface);
-}
-
-.video-list-text {
-  display: grid;
-  align-content: start;
-  gap: 4px;
-}
-
-.video-list-title {
+.description.is-clamped {
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1.4;
 }
 
-.video-list-channel {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
+.sidebar-heading {
+  margin: 0 0 12px;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 /* --- Narrow screens ------------------------------------------------------------------- */
 
-@media (max-width: 900px) {
-  .layout {
+@media (max-width: 1000px) {
+  .watch {
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -265,24 +433,42 @@ body {
   }
 
   .main {
-    padding: 0 0 16px;
+    padding: 0 0 24px;
   }
 
   .player {
     border-radius: 0;
   }
 
-  .video-detail h1,
-  .video-channel,
-  .video-description,
   .demo-notice,
   .results-heading,
-  .video-list {
+  .video-title,
+  .video-channel,
+  .about,
+  .sidebar,
+  .notice {
     margin-left: 12px;
     margin-right: 12px;
   }
 
-  .video-list-item button {
+  .demo-notice,
+  .results-heading {
+    margin-top: 12px;
+  }
+
+  .video-grid:not(.is-compact) {
+    gap: 24px;
+  }
+
+  .video-grid:not(.is-compact) .thumb {
+    border-radius: 0;
+  }
+
+  .video-grid:not(.is-compact) .video-card-text {
+    padding: 0 12px;
+  }
+
+  .video-card.is-compact > a {
     grid-template-columns: 140px minmax(0, 1fr);
   }
 }

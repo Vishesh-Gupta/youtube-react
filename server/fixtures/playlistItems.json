@@ -1,0 +1,30 @@
+{
+  "kind": "youtube#playlistItemListResponse",
+  "nextPageToken": "EAAaBlBUOkNBVQ",
+  "items": [
+    {
+      "kind": "youtube#playlistItem",
+      "snippet": {
+        "publishedAt": "2016-02-09T16:00:00Z",
+        "channelId": "UCSMOQeBJ2RAnuFungnQOxLg",
+        "title": "Caminandes 3: Llamigos",
+        "description": "",
+        "thumbnails": {},
+        "channelTitle": "Blender",
+        "resourceId": { "kind": "youtube#video", "videoId": "SkVqJ1SGeL0" }
+      }
+    },
+    {
+      "kind": "youtube#playlistItem",
+      "snippet": {
+        "publishedAt": "2010-09-30T10:00:00Z",
+        "channelId": "UCSMOQeBJ2RAnuFungnQOxLg",
+        "title": "Private video",
+        "description": "This video is private.",
+        "thumbnails": {},
+        "channelTitle": "Blender",
+        "resourceId": { "kind": "youtube#video", "videoId": "zzzzzzzzzzz" }
+      }
+    }
+  ]
+}
